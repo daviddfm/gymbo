@@ -1,0 +1,37 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><title>Gymbo</title>
+<style>
+body{margin:0;font-family:-apple-system,system-ui;background:#111;color:#eee;padding:12px 12px 90px}
+h1{font-size:20px;margin:4px 0}.blk{color:#9ad;font-size:13px;margin:18px 0 6px;text-transform:uppercase}
+.card{background:#1d1d1f;border-radius:14px;padding:12px;margin-bottom:12px}.card.done{opacity:.55}
+.card img{width:100%;border-radius:10px;background:#fff;max-height:200px;object-fit:contain}
+.row{display:flex;align-items:center;justify-content:space-between;margin:8px 0}
+button{font-size:18px;border:0;border-radius:10px;padding:12px 14px;background:#333;color:#fff;touch-action:manipulation}
+.big{flex:1;background:#2a7;margin-left:6px}.val{font-size:22px;min-width:70px;text-align:center}
+.sets div{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-top:1px solid #333}
+.sets button{padding:6px 10px;font-size:14px;background:#622}#status{position:fixed;bottom:0;left:0;right:0;background:#000;padding:10px 12px 24px;font-size:13px}
+#alldone{width:100%;background:#36c;margin-top:8px}
+</style></head><body>
+<h1 id="title">Gymbo</h1><div id="cards"></div><button id="alldone">All done ✓</button><div id="status">loading…</div>
+<script>
+let S,C,cfg={},st,KEY;const $=s=>document.querySelector(s);
+const q=JSON.parse(localStorage.getItem('gymbo-queue')||'[]');
+function save(){localStorage.setItem(KEY,JSON.stringify(st));localStorage.setItem('gymbo-queue',JSON.stringify(q))}
+function status(){$('#status').textContent=(cfg.relay_url?'Sync: ':'Sync OFF (no relay) · ')+(q.length?q.length+' pending':'all sent ✓')+' · '+S.id}
+async function flush(){if(!cfg.relay_url)return status();while(q.length){try{const r=await fetch(cfg.relay_url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(q[0])});if(!r.ok)break;q.shift();save()}catch(e){break}}status()}
+function send(type,card,extra){q.push(Object.assign({source:'gymbo-pages',type,session:S.id,title:S.title,card:card&&card.name,card_id:card&&card.id,ts:new Date().toISOString()},extra||{}));save();flush()}
+function render(){let h='',last='';C.forEach((c,i)=>{const s=st[c.id];if(c.block!==last){h+=`<div class="blk">${c.block}</div>`;last=c.block}
+h+=`<div class="card ${s.done?'done':''}"><b>${c.name}</b> <small>${s.sets.length}/${c.sets} sets</small><img src="${c.img}" alt="">
+${c.step?`<div class="row"><button onclick="adj(${i},'w',-1)">−</button><span class="val">${s.w} kg</span><button onclick="adj(${i},'w',1)">+</button></div>`:''}
+<div class="row"><button onclick="adj(${i},'r',-1)">−</button><span class="val">${s.r} reps</span><button onclick="adj(${i},'r',1)">+</button></div>
+<div class="row"><button class="big" onclick="complete(${i})">Complete set</button><button style="margin-left:6px" onclick="done(${i})">${s.done?'Undo':'✓ Done'}</button></div>
+<div class="sets">${s.sets.map((x,j)=>`<div><span>Set ${j+1}: ${c.step?x.w+' kg × ':''}${x.r}</span><button onclick="del(${i},${j})">Delete</button></div>`).join('')}</div></div>`});$('#cards').innerHTML=h}
+function adj(i,k,d){const c=C[i],s=st[c.id];if(k=='w')s.w=Math.max(0,+(s.w+d*c.step).toFixed(2));else s.r=Math.max(0,s.r+d);save();render()}
+function complete(i){const c=C[i],s=st[c.id],x={w:s.w,r:s.r};s.sets.push(x);save();render();send('set_complete',c,{set:s.sets.length,weight_kg:x.w,reps:x.r})}
+function del(i,j){const c=C[i],s=st[c.id],x=s.sets.splice(j,1)[0];save();render();send('set_delete',c,{set:j+1,weight_kg:x.w,reps:x.r})}
+function done(i){const c=C[i],s=st[c.id];s.done=!s.done;save();render();send(s.done?'exercise_done':'exercise_undo',c,{sets:s.sets})}
+$('#alldone').onclick=()=>{if(confirm('Finish workout?'))send('workout_done',null,{summary:C.map(c=>({name:c.name,sets:st[c.id].sets}))})};
+(async()=>{const nc='?t='+Date.now();cfg=await fetch('config.json'+nc).then(r=>r.json()).catch(()=>({}));S=await fetch('session.json'+nc).then(r=>r.json());C=S.cards;
+KEY='gymbo-state-'+S.id;st=JSON.parse(localStorage.getItem(KEY)||'{}');C.forEach(c=>{st[c.id]=st[c.id]||{w:c.weight,r:c.reps,sets:[],done:false}});
+$('#title').textContent=S.title;save();render();flush();setInterval(flush,15000)})();
+</script></body></html>

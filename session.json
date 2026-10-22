@@ -1,0 +1,17 @@
+{
+  "id": "2026-10-23-db",
+  "title": "Dumbbell day — Strength + Hyrox",
+  "date": "next session",
+  "cards": [
+    {"id":"press","block":"A · Strength","name":"DB shoulder press","img":"moves/dumbbell-shoulder-press.jpg","weight":15,"reps":9,"sets":3,"step":2.5},
+    {"id":"row","block":"A · Strength","name":"Single-arm DB row","img":"moves/single-arm-dumbbell-row.jpg","weight":20,"reps":10,"sets":3,"step":2.5},
+    {"id":"goblet","block":"A · Strength","name":"Goblet squat","img":"moves/goblet-squat.jpg","weight":20,"reps":10,"sets":3,"step":2.5},
+    {"id":"bench","block":"B · Strength","name":"DB bench press","img":"moves/dumbbell-bench-press.jpg","weight":15,"reps":10,"sets":3,"step":2.5},
+    {"id":"renegade","block":"B · Strength","name":"Renegade row","img":"moves/renegade-row.jpg","weight":10,"reps":8,"sets":3,"step":2.5},
+    {"id":"knees","block":"Abs","name":"Seated knee raises","img":"moves/seated-knee-raise.jpg","weight":0,"reps":30,"sets":3,"step":0},
+    {"id":"thruster","block":"Hyrox finisher · 3 rounds","name":"DB thruster","img":"moves/dumbbell-thruster.jpg","weight":10,"reps":12,"sets":3,"step":2.5},
+    {"id":"carry","block":"Hyrox finisher · 3 rounds","name":"Farmer carry (m)","img":"moves/farmer-carry.jpg","weight":20,"reps":40,"sets":3,"step":2.5},
+    {"id":"burpee","block":"Hyrox finisher · 3 rounds","name":"Burpees","img":"moves/burpee.jpg","weight":0,"reps":10,"sets":3,"step":0},
+    {"id":"lunge","block":"Hyrox finisher · 3 rounds","name":"DB walking lunge","img":"moves/dumbbell-walking-lunge.jpg","weight":10,"reps":12,"sets":3,"step":2.5}
+  ]
+}
