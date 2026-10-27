@@ -3,12 +3,12 @@
 <style>
 body{font-family:-apple-system,system-ui;background:#111;color:#eee;margin:0;padding:12px 12px 90px}
 h1{font-size:20px;margin:4px 0}h2{font-size:16px;color:#9cf;margin:18px 0 6px}
-.card{background:#1d1d1f;border-radius:14px;padding:12px;margin:10px 0}.card.done{opacity:.55}
+.card{background:#1d1d1f;border-radius:14px;padding:12px;margin:10px 0;overflow-anchor:none}.card.done{opacity:.55}
 .card img{width:100%;border-radius:10px;background:#fff;max-height:220px;object-fit:contain;display:block}
 .row{display:flex;align-items:center;justify-content:space-between;margin:8px 0;gap:6px}
 button{font-size:18px;border:0;border-radius:10px;padding:12px 14px;background:#333;color:#fff;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-button:active{transform:scale(.96)}.big{flex:1;background:#2a7;font-weight:600}.ok{background:#36c}.del{background:#a33;font-size:14px;padding:6px 10px}
-.val{font-size:22px;font-weight:700;min-width:70px;text-align:center}
+button:active{opacity:.85}.big{flex:1;background:#2a7;font-weight:600}.ok{background:#36c}.del{background:#a33;font-size:14px;padding:6px 10px}
+.val{font-size:22px;font-weight:700;min-width:88px;text-align:center;overflow-anchor:none}
 .sets div{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-top:1px solid #333}
 #bar{position:fixed;left:0;right:0;bottom:0;background:#000;padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;align-items:center;z-index:5}
 #sync{flex:1;font-size:14px}.g{color:#4d8}.r{color:#f66}.y{color:#fc4}
@@ -80,16 +80,23 @@ function build(){
   built=true;
   ind();
 }
-function patch(id){
+function patchVals(id){
   const c=C(id), x=st[id]; if(!c||!x) return;
   const el=document.querySelector('.card[data-cid="'+id+'"]'); if(!el) return;
   const u=c.repLabel||"reps";
-  el.classList.toggle("done", !!x.done);
   const vw=el.querySelector("[data-vw]"); if(vw) vw.textContent=x.w+" kg";
   const vr=el.querySelector("[data-vr]"); if(vr) vr.textContent=x.r+" "+u;
+}
+function patchCard(id){
+  const c=C(id), x=st[id]; if(!c||!x) return;
+  const el=document.querySelector('.card[data-cid="'+id+'"]'); if(!el) return;
+  const y=window.scrollY;
+  el.classList.toggle("done", !!x.done);
+  patchVals(id);
   const act=el.querySelector("[data-actions]"); if(act) act.innerHTML=actionsHtml(c,x);
   const sets=el.querySelector("[data-sets]"); if(sets) sets.innerHTML=setsHtml(c,x);
   ind();
+  window.scrollTo(0,y);
 }
 function applySession(next){
   const same=S && S.id===next.id && built;
@@ -99,32 +106,33 @@ function applySession(next){
   for(const c of cards()) st[c.id]=st[c.id]||{w:c.weight,r:c.reps,sets:[],done:false};
   localStorage.setItem("gymbo-session-cache", JSON.stringify(S));
   save();
-  if(same){ for(const c of cards()) patch(c.id); }
+  if(same){ for(const c of cards()) patchCard(c.id); }
   else build();
 }
 function adj(id,k,d){
   const c=C(id), x=st[id];
   if(k==="w") x.w=Math.max(0,+(x.w+d*c.step).toFixed(2));
   else x.r=Math.max(0,x.r+d);
-  save(); patch(id);
+  save(); patchVals(id);
 }
 function complete(id){
-  const x=st[id]; const s={w:x.w,r:x.r}; x.sets.push(s); save(); patch(id);
+  const x=st[id]; const s={w:x.w,r:x.r}; x.sets.push(s); save(); patchCard(id);
   send("set_complete",C(id),{set:x.sets.length,weight_kg:s.w,reps:s.r});
 }
 function del(id,i){
   if(!confirm("Delete set "+(i+1)+"?")) return;
-  const x=st[id]; const s=x.sets.splice(i,1)[0]; save(); patch(id);
+  const x=st[id]; const s=x.sets.splice(i,1)[0]; save(); patchCard(id);
   send("set_delete",C(id),{set:i+1,weight_kg:s.w,reps:s.r});
 }
-function done(id){ st[id].done=true; save(); patch(id); send("exercise_done",C(id),{sets:st[id].sets}); }
-function undo(id){ st[id].done=false; save(); patch(id); send("exercise_undo_done",C(id),{}); }
+function done(id){ st[id].done=true; save(); patchCard(id); send("exercise_done",C(id),{sets:st[id].sets}); }
+function undo(id){ st[id].done=false; save(); patchCard(id); send("exercise_undo_done",C(id),{}); }
 function allDone(){
   if(!confirm("Finish workout?")) return;
   send("session_done",null,{summary:cards().map(c=>({exercise:c.name,sets:st[c.id].sets}))});
 }
 $("app").addEventListener("click",e=>{
   const b=e.target.closest("button[data-act]"); if(!b) return;
+  e.preventDefault();
   const id=b.dataset.id, act=b.dataset.act;
   if(act==="adj") adj(id,b.dataset.k,+b.dataset.d);
   else if(act==="complete") complete(id);
