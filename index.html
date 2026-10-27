@@ -1,51 +1,159 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><title>Gymbo</title>
 <style>
 body{font-family:-apple-system,system-ui;background:#111;color:#eee;margin:0;padding:12px 12px 90px}
 h1{font-size:20px;margin:4px 0}h2{font-size:16px;color:#9cf;margin:18px 0 6px}
 .card{background:#1d1d1f;border-radius:14px;padding:12px;margin:10px 0}.card.done{opacity:.55}
-.card img{width:100%;border-radius:10px;background:#fff;max-height:220px;object-fit:contain}
+.card img{width:100%;border-radius:10px;background:#fff;max-height:220px;object-fit:contain;display:block}
 .row{display:flex;align-items:center;justify-content:space-between;margin:8px 0;gap:6px}
 button{font-size:18px;border:0;border-radius:10px;padding:12px 14px;background:#333;color:#fff;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 button:active{transform:scale(.96)}.big{flex:1;background:#2a7;font-weight:600}.ok{background:#36c}.del{background:#a33;font-size:14px;padding:6px 10px}
 .val{font-size:22px;font-weight:700;min-width:70px;text-align:center}
 .sets div{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-top:1px solid #333}
-#bar{position:fixed;left:0;right:0;bottom:0;background:#000;padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;align-items:center}
+#bar{position:fixed;left:0;right:0;bottom:0;background:#000;padding:10px 12px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;align-items:center;z-index:5}
 #sync{flex:1;font-size:14px}.g{color:#4d8}.r{color:#f66}.y{color:#fc4}
 </style></head><body>
-<h1 id="title">Gymbo</h1><div id="app">Loading…</div>
-<div id="bar"><span id="sync" class="y">…</span><button onclick="flush()">Retry</button><button class="ok" onclick="allDone()">All done</button></div>
+<h1 id="title">Gymbo</h1><div id="app"></div>
+<div id="bar"><span id="sync" class="y">…</span><button type="button" id="btnRetry">Retry</button><button type="button" class="ok" id="btnAll">All done</button></div>
 <script>
-let S, CFG={relayUrl:""}, st, KEY, Q=JSON.parse(localStorage.getItem("gymbo-queue")||"[]");
+let S=null, CFG={relayUrl:""}, st={}, KEY="", built=false;
+let Q=JSON.parse(localStorage.getItem("gymbo-queue")||"[]");
 const $=id=>document.getElementById(id);
-function save(){localStorage.setItem(KEY,JSON.stringify(st));localStorage.setItem("gymbo-queue",JSON.stringify(Q));}
-function cards(){return S.blocks.flatMap(b=>b.cards)}
-function send(type,card,extra){Q.push({type,session:S.id,exercise:card?card.name:null,id:card?card.id:null,ts:new Date().toISOString(),...extra,eid:Date.now()+"-"+Math.random().toString(36).slice(2,7)});save();flush();}
+const cards=()=>S.blocks.flatMap(b=>b.cards);
+const C=id=>cards().find(c=>c.id===id);
+function save(){ if(KEY) localStorage.setItem(KEY,JSON.stringify(st)); localStorage.setItem("gymbo-queue",JSON.stringify(Q)); }
+function send(type,card,extra){
+  Q.push({type,session:S.id,exercise:card?card.name:null,id:card?card.id:null,ts:new Date().toISOString(),...extra,eid:Date.now()+"-"+Math.random().toString(36).slice(2,7)});
+  save(); flush();
+}
 let busy=false;
-async function flush(){ if(busy)return; if(!CFG.relayUrl){ind();return} busy=true;
-  while(Q.length){ try{const r=await fetch(CFG.relayUrl,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(Q[0])}); if(!r.ok)throw 0; Q.shift();save();}catch(e){busy=false;ind(true);return} }
-  busy=false;ind();}
-function ind(fail){const s=$("sync"); if(!CFG.relayUrl){s.className="r";s.textContent="Relay not set — "+Q.length+" saved on phone";return}
-  if(fail){s.className="r";s.textContent="Sync failed — "+Q.length+" queued (auto-retry)";} else if(Q.length){s.className="y";s.textContent="Syncing "+Q.length+"…"} else {s.className="g";s.textContent="✓ Synced"}}
-function render(){ $("title").textContent=S.title; let h="";
- for(const b of S.blocks){h+="<h2>"+b.name+"</h2>"; for(const c of b.cards){const x=st[c.id]; const u=c.repLabel||"reps";
-  h+=`<div class="card ${x.done?"done":""}"><b>${c.name}</b> <small>· target ${c.sets}×${c.reps}${c.weight?" @ "+c.weight+"kg":""}</small><img src="${c.img}" alt="${c.name}" loading="lazy">
-  ${c.step?`<div class="row"><button onclick="adj('${c.id}','w',-1)">−</button><span class="val">${x.w} kg</span><button onclick="adj('${c.id}','w',1)">+</button></div>`:""}
-  <div class="row"><button onclick="adj('${c.id}','r',-1)">−</button><span class="val">${x.r} ${u}</span><button onclick="adj('${c.id}','r',1)">+</button></div>
-  <div class="row">${x.done?`<button class="big" onclick="undo('${c.id}')">Undo done</button>`:`<button class="big" onclick="complete('${c.id}')">Complete set ${x.sets.length+1}</button><button class="ok" onclick="done('${c.id}')">✓</button>`}</div>
-  <div class="sets">${x.sets.map((s,i)=>`<div><span>Set ${i+1}: ${s.w?s.w+"kg × ":""}${s.r} ${u}</span><button class="del" onclick="del('${c.id}',${i})">Delete</button></div>`).join("")}</div></div>`;}}
- $("app").innerHTML=h; ind();}
-function C(id){return cards().find(c=>c.id==id)}
-function adj(id,k,d){const c=C(id),x=st[id]; if(k=="w")x.w=Math.max(0,+(x.w+d*c.step).toFixed(2)); else x.r=Math.max(0,x.r+d); save();render();}
-function complete(id){const x=st[id];const s={w:x.w,r:x.r};x.sets.push(s);save();render();send("set_complete",C(id),{set:x.sets.length,weight_kg:s.w,reps:s.r});}
-function del(id,i){if(!confirm("Delete set "+(i+1)+"?"))return;const x=st[id];const s=x.sets.splice(i,1)[0];save();render();send("set_delete",C(id),{set:i+1,weight_kg:s.w,reps:s.r});}
-function done(id){st[id].done=true;save();render();send("exercise_done",C(id),{sets:st[id].sets});}
-function undo(id){st[id].done=false;save();render();send("exercise_undo_done",C(id),{});}
-function allDone(){if(!confirm("Finish workout?"))return;send("session_done",null,{summary:cards().map(c=>({exercise:c.name,sets:st[c.id].sets}))});}
-(async()=>{ const nc="?t="+Date.now();
- try{CFG=await (await fetch("config.json"+nc,{cache:"no-store"})).json()}catch(e){}
- S=await (await fetch("session.json"+nc,{cache:"no-store"})).json(); KEY="gymbo-state-"+S.id;
- st=JSON.parse(localStorage.getItem(KEY)||"{}"); for(const c of cards()) st[c.id]=st[c.id]||{w:c.weight,r:c.reps,sets:[],done:false};
- save();render();flush();setInterval(()=>{if(Q.length)flush()},15000);
- document.addEventListener("visibilitychange",()=>{if(!document.hidden)flush()});})();
+async function flush(){
+  if(busy) return;
+  if(!CFG.relayUrl){ ind(); return; }
+  busy=true;
+  while(Q.length){
+    try{
+      const r=await fetch(CFG.relayUrl,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(Q[0])});
+      if(!r.ok) throw 0;
+      Q.shift(); save();
+    }catch(e){ busy=false; ind(true); return; }
+  }
+  busy=false; ind();
+}
+function ind(fail){
+  const s=$("sync");
+  if(!CFG.relayUrl){ s.className="r"; s.textContent="Relay not set — "+Q.length+" saved on phone"; return; }
+  if(fail){ s.className="r"; s.textContent="Sync failed — "+Q.length+" queued (auto-retry)"; }
+  else if(Q.length){ s.className="y"; s.textContent="Syncing "+Q.length+"…"; }
+  else { s.className="g"; s.textContent="✓ Synced"; }
+}
+function setsHtml(c,x){
+  const u=c.repLabel||"reps";
+  return x.sets.map((s,i)=>`<div><span>Set ${i+1}: ${s.w?s.w+"kg × ":""}${s.r} ${u}</span><button type="button" class="del" data-act="del" data-id="${c.id}" data-i="${i}">Delete</button></div>`).join("");
+}
+function actionsHtml(c,x){
+  if(x.done) return `<button type="button" class="big" data-act="undo" data-id="${c.id}">Undo done</button>`;
+  return `<button type="button" class="big" data-act="complete" data-id="${c.id}">Complete set ${x.sets.length+1}</button><button type="button" class="ok" data-act="done" data-id="${c.id}">✓</button>`;
+}
+function build(){
+  if(!S) return;
+  $("title").textContent=S.title;
+  const app=$("app");
+  app.textContent="";
+  for(const b of S.blocks){
+    const h=document.createElement("h2"); h.textContent=b.name; app.appendChild(h);
+    for(const c of b.cards){
+      const x=st[c.id];
+      const u=c.repLabel||"reps";
+      const el=document.createElement("div");
+      el.className="card"+(x.done?" done":"");
+      el.dataset.cid=c.id;
+      el.innerHTML=`<b>${c.name}</b> <small>· target ${c.sets}×${c.reps}${c.weight?" @ "+c.weight+"kg":""}</small>`+
+        `<img src="${c.img}" alt="${c.name}" decoding="async">`+
+        (c.step?`<div class="row"><button type="button" data-act="adj" data-id="${c.id}" data-k="w" data-d="-1">−</button><span class="val" data-vw>${x.w} kg</span><button type="button" data-act="adj" data-id="${c.id}" data-k="w" data-d="1">+</button></div>`:"")+
+        `<div class="row"><button type="button" data-act="adj" data-id="${c.id}" data-k="r" data-d="-1">−</button><span class="val" data-vr>${x.r} ${u}</span><button type="button" data-act="adj" data-id="${c.id}" data-k="r" data-d="1">+</button></div>`+
+        `<div class="row" data-actions>${actionsHtml(c,x)}</div>`+
+        `<div class="sets" data-sets>${setsHtml(c,x)}</div>`;
+      app.appendChild(el);
+    }
+  }
+  built=true;
+  ind();
+}
+function patch(id){
+  const c=C(id), x=st[id]; if(!c||!x) return;
+  const el=document.querySelector('.card[data-cid="'+id+'"]'); if(!el) return;
+  const u=c.repLabel||"reps";
+  el.classList.toggle("done", !!x.done);
+  const vw=el.querySelector("[data-vw]"); if(vw) vw.textContent=x.w+" kg";
+  const vr=el.querySelector("[data-vr]"); if(vr) vr.textContent=x.r+" "+u;
+  const act=el.querySelector("[data-actions]"); if(act) act.innerHTML=actionsHtml(c,x);
+  const sets=el.querySelector("[data-sets]"); if(sets) sets.innerHTML=setsHtml(c,x);
+  ind();
+}
+function applySession(next){
+  const same=S && S.id===next.id && built;
+  S=next;
+  KEY="gymbo-state-"+S.id;
+  st=JSON.parse(localStorage.getItem(KEY)||"{}");
+  for(const c of cards()) st[c.id]=st[c.id]||{w:c.weight,r:c.reps,sets:[],done:false};
+  localStorage.setItem("gymbo-session-cache", JSON.stringify(S));
+  save();
+  if(same){ for(const c of cards()) patch(c.id); }
+  else build();
+}
+function adj(id,k,d){
+  const c=C(id), x=st[id];
+  if(k==="w") x.w=Math.max(0,+(x.w+d*c.step).toFixed(2));
+  else x.r=Math.max(0,x.r+d);
+  save(); patch(id);
+}
+function complete(id){
+  const x=st[id]; const s={w:x.w,r:x.r}; x.sets.push(s); save(); patch(id);
+  send("set_complete",C(id),{set:x.sets.length,weight_kg:s.w,reps:s.r});
+}
+function del(id,i){
+  if(!confirm("Delete set "+(i+1)+"?")) return;
+  const x=st[id]; const s=x.sets.splice(i,1)[0]; save(); patch(id);
+  send("set_delete",C(id),{set:i+1,weight_kg:s.w,reps:s.r});
+}
+function done(id){ st[id].done=true; save(); patch(id); send("exercise_done",C(id),{sets:st[id].sets}); }
+function undo(id){ st[id].done=false; save(); patch(id); send("exercise_undo_done",C(id),{}); }
+function allDone(){
+  if(!confirm("Finish workout?")) return;
+  send("session_done",null,{summary:cards().map(c=>({exercise:c.name,sets:st[c.id].sets}))});
+}
+$("app").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-act]"); if(!b) return;
+  const id=b.dataset.id, act=b.dataset.act;
+  if(act==="adj") adj(id,b.dataset.k,+b.dataset.d);
+  else if(act==="complete") complete(id);
+  else if(act==="done") done(id);
+  else if(act==="undo") undo(id);
+  else if(act==="del") del(id,+b.dataset.i);
+});
+$("btnRetry").onclick=()=>flush();
+$("btnAll").onclick=()=>allDone();
+
+// Instant paint from last session so the page never starts blank
+try{
+  const cached=JSON.parse(localStorage.getItem("gymbo-session-cache")||"null");
+  const cachedCfg=JSON.parse(localStorage.getItem("gymbo-config-cache")||"null");
+  if(cachedCfg && cachedCfg.relayUrl) CFG=cachedCfg;
+  if(cached && cached.id) applySession(cached);
+}catch(e){}
+
+(async()=>{
+  try{
+    const cfg=await (await fetch("config.json",{cache:"no-store"})).json();
+    CFG=cfg; localStorage.setItem("gymbo-config-cache", JSON.stringify(CFG)); ind();
+  }catch(e){}
+  try{
+    const next=await (await fetch("session.json",{cache:"no-store"})).json();
+    applySession(next);
+  }catch(e){ if(!S) $("app").textContent="Couldn’t load session — check connection and retry."; }
+  flush();
+  setInterval(()=>{ if(Q.length) flush(); },15000);
+  document.addEventListener("visibilitychange",()=>{ if(!document.hidden) flush(); });
+})();
 </script></body></html>
