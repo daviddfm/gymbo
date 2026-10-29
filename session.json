@@ -7,7 +7,7 @@
       {"id":"a2","name":"Lat pulldown","img":"moves/lat-pulldown.jpg","weight":40,"reps":10,"sets":3,"step":2.5},
       {"id":"a3","name":"DB walking lunge","img":"moves/dumbbell-walking-lunge.jpg","weight":12.5,"reps":16,"sets":3,"step":2.5}]},
     {"name":"Block B — Strength","cards":[
-      {"id":"b1","name":"DB shoulder press","img":"moves/dumbbell-shoulder-press.jpg","weight":15,"reps":10,"sets":3,"step":2.5},
+      {"id":"b1","name":"Tricep pushdown","img":"moves/tricep-pushdown.jpg","weight":25,"reps":10,"sets":3,"step":2.5},
       {"id":"b2","name":"Seated cable row","img":"moves/seated-cable-row.jpg","weight":40,"reps":10,"sets":3,"step":2.5}]},
     {"name":"Abs","cards":[
       {"id":"x1","name":"Kneeling cable crunch","img":"moves/cable-crunch.jpg","weight":40,"reps":15,"sets":3,"step":2.5}]},
