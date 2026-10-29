@@ -1,21 +1,19 @@
 {
-  "id": "2026-10-27",
-  "title": "Tue Oct 27 — Strength + Hyrox",
+  "id": "2026-10-29",
+  "title": "Thu Oct 29 — Pull + Hyrox",
   "blocks": [
-    {"name":"Block A — Strength","cards":[
-      {"id":"a1","name":"DB shoulder press","img":"moves/dumbbell-shoulder-press.jpg","weight":15,"reps":10,"sets":3,"step":2.5},
-      {"id":"a2","name":"Single-arm DB row","img":"moves/single-arm-dumbbell-row.jpg","weight":20,"reps":12,"sets":3,"step":2.5},
-      {"id":"a3","name":"Goblet squat","img":"moves/goblet-squat.jpg","weight":20,"reps":12,"sets":3,"step":2.5}]},
-    {"name":"Block B — Strength","cards":[
-      {"id":"b1","name":"DB bench press","img":"moves/dumbbell-bench-press.jpg","weight":15,"reps":10,"sets":3,"step":2.5},
-      {"id":"b2","name":"Renegade row","img":"moves/renegade-row.jpg","weight":12.5,"reps":8,"sets":3,"step":2.5},
-      {"id":"b3","name":"Dead bug","img":"moves/dead-bug.jpg","weight":0,"reps":12,"sets":3,"step":0}]},
-    {"name":"Hyrox finisher — 3 rounds","cards":[
-      {"id":"h1","name":"DB thruster","img":"moves/dumbbell-thruster.jpg","weight":10,"reps":12,"sets":3,"step":2.5},
-      {"id":"h2","name":"Farmer carry (m)","img":"moves/farmer-carry.jpg","weight":20,"reps":40,"sets":3,"step":2.5,"repLabel":"m"},
-      {"id":"h3","name":"Burpee","img":"moves/burpee.jpg","weight":0,"reps":10,"sets":3,"step":0},
-      {"id":"h4","name":"DB walking lunge","img":"moves/dumbbell-walking-lunge.jpg","weight":10,"reps":16,"sets":3,"step":2.5}]},
+    {"name":"Block A — Pull strength","cards":[
+      {"id":"a1","name":"Lat pulldown","img":"moves/lat-pulldown.jpg","weight":40,"reps":10,"sets":3,"step":2.5},
+      {"id":"a2","name":"Seated cable row","img":"moves/seated-cable-row.jpg","weight":40,"reps":10,"sets":3,"step":2.5},
+      {"id":"a3","name":"DB walking lunge","img":"moves/dumbbell-walking-lunge.jpg","weight":12.5,"reps":16,"sets":3,"step":2.5}]},
+    {"name":"Block B","cards":[
+      {"id":"b1","name":"Face pull","img":"moves/face-pull.jpg","weight":15,"reps":15,"sets":3,"step":2.5},
+      {"id":"b2","name":"Renegade row","img":"moves/renegade-row.jpg","weight":12.5,"reps":8,"sets":3,"step":2.5}]},
     {"name":"Abs","cards":[
-      {"id":"x1","name":"Seated knee raises","img":"moves/seated-knee-raise.jpg","weight":0,"reps":30,"sets":3,"step":0}]}
+      {"id":"x1","name":"Kneeling cable crunch","img":"moves/cable-crunch.jpg","weight":40,"reps":15,"sets":3,"step":2.5}]},
+    {"name":"Hyrox finisher — 3 rounds","cards":[
+      {"id":"h1","name":"Farmer carry (m)","img":"moves/farmer-carry.jpg","weight":24,"reps":40,"sets":3,"step":2,"repLabel":"m"},
+      {"id":"h2","name":"DB thruster","img":"moves/dumbbell-thruster.jpg","weight":10,"reps":12,"sets":3,"step":2.5},
+      {"id":"h3","name":"Burpee","img":"moves/burpee.jpg","weight":0,"reps":10,"sets":3,"step":0}]}
   ]
 }
