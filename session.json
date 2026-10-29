@@ -1,14 +1,14 @@
 {
   "id": "2026-10-29",
-  "title": "Thu Oct 29 — Pull + Hyrox",
+  "title": "Thu Oct 29 — Push/Pull + Hyrox",
   "blocks": [
-    {"name":"Block A — Pull strength","cards":[
-      {"id":"a1","name":"Lat pulldown","img":"moves/lat-pulldown.jpg","weight":40,"reps":10,"sets":3,"step":2.5},
-      {"id":"a2","name":"Seated cable row","img":"moves/seated-cable-row.jpg","weight":40,"reps":10,"sets":3,"step":2.5},
+    {"name":"Block A — Strength","cards":[
+      {"id":"a1","name":"DB bench press","img":"moves/dumbbell-bench-press.jpg","weight":17.5,"reps":10,"sets":3,"step":2.5},
+      {"id":"a2","name":"Lat pulldown","img":"moves/lat-pulldown.jpg","weight":40,"reps":10,"sets":3,"step":2.5},
       {"id":"a3","name":"DB walking lunge","img":"moves/dumbbell-walking-lunge.jpg","weight":12.5,"reps":16,"sets":3,"step":2.5}]},
-    {"name":"Block B","cards":[
-      {"id":"b1","name":"Face pull","img":"moves/face-pull.jpg","weight":15,"reps":15,"sets":3,"step":2.5},
-      {"id":"b2","name":"Renegade row","img":"moves/renegade-row.jpg","weight":12.5,"reps":8,"sets":3,"step":2.5}]},
+    {"name":"Block B — Strength","cards":[
+      {"id":"b1","name":"DB shoulder press","img":"moves/dumbbell-shoulder-press.jpg","weight":15,"reps":10,"sets":3,"step":2.5},
+      {"id":"b2","name":"Seated cable row","img":"moves/seated-cable-row.jpg","weight":40,"reps":10,"sets":3,"step":2.5}]},
     {"name":"Abs","cards":[
       {"id":"x1","name":"Kneeling cable crunch","img":"moves/cable-crunch.jpg","weight":40,"reps":15,"sets":3,"step":2.5}]},
     {"name":"Hyrox finisher — 3 rounds","cards":[
